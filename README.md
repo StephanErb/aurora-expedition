@@ -54,10 +54,22 @@ We can now check form outside of our Vagrant box that the server is running es e
 
 
     $ curl http://aurora.local:8000
-    Hello World!
+    <html><head><title></title></head>
+      <body>
+        <pre>
+         ______________
+        < Hello World! >
+         --------------
+                \   ^__^
+                 \  (oo)\_______
+                    (__)\       )\/
+                        ||----w |
+                        ||     ||
+        </pre>
+      </body>
+    </html>
 
-
-We are now ready to deploy that via Aurora
+Yeah! Now we are ready to deploy that via Aurora.
 
 
 ## Deplying the Flask Example using Apache Aurora
