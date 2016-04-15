@@ -1,5 +1,5 @@
 repo = 'StephanErb/aurora-expedition'
-checksum = '11983fec9bf74f7f7def6d46502d3757bb9bfca5'
+checksum = 'a91c8f60f7dc405d70361e471c22f075a8f89661'
 
 install = Process(
     name = 'install',
