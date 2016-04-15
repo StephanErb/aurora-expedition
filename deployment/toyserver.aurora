@@ -1,0 +1,34 @@
+repo = 'StephanErb/aurora-expedition'
+checksum = '11983fec9bf74f7f7def6d46502d3757bb9bfca5'
+
+install = Process(
+    name = 'install',
+    cmdline = """
+        # We don't have a proper packaging infrastructure setup in this tutorial,
+        # so we use github as a workaround.
+        virtualenv venv &&
+        source venv/bin/activate &&
+        venv/bin/python venv/bin/pip install git+git://github.com/{{repo}}.git@{{checksum}}#egg=toyserver
+    """
+).bind(repo=repo, checksum=checksum)
+
+serve = Process(
+    name = 'serve',
+    cmdline = 'venv/bin/python venv/bin/gunicorn toyserver.main:app --bind :{{thermos.ports[http]}}'
+)
+
+server = SequentialTask(
+    processes = [install, serve],
+    resources = Resources(cpu=1, ram = 32*MB, disk=32*MB)
+)
+
+jobs = [
+    Service(
+        task = server,
+        instances = 1,
+        cluster = 'devcluster',
+        environment = 'devel',
+        role = 'www-data',
+        name = 'toyserver'
+    )
+]
