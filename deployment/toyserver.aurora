@@ -1,16 +1,17 @@
-repo = 'StephanErb/aurora-expedition'
-checksum = 'a91c8f60f7dc405d70361e471c22f075a8f89661'
+# Aurora configuration for our toyserver:
+# * installs from Github using Pip (as we don't have a packaging server in this tutorial)
+# * runs the Python Flask app using Gunicorn
+#
+# Details regarding the Aurora configuration language can be found at:
+# * https://github.com/apache/aurora/blob/master/docs/reference/configuration-tutorial.md
+# * https://github.com/apache/aurora/blob/master/docs/reference/configuration.md
 
 install = Process(
     name = 'install',
-    cmdline = """
-        # We don't have a proper packaging infrastructure setup in this tutorial,
-        # so we use github as a workaround.
-        virtualenv venv &&
-        source venv/bin/activate &&
-        venv/bin/python venv/bin/pip install git+git://github.com/{{repo}}.git@{{checksum}}#egg=toyserver
-    """
-).bind(repo=repo, checksum=checksum)
+    cmdline = 'virtualenv venv && '
+              'source venv/bin/activate && '
+              'venv/bin/python venv/bin/pip install git+git://github.com/{{repo}}.git@{{checksum}}#egg=toyserver'
+)
 
 serve = Process(
     name = 'serve',
@@ -18,6 +19,7 @@ serve = Process(
 )
 
 server = SequentialTask(
+    name = 'toyinstance',
     processes = [install, serve],
     resources = Resources(cpu=1, ram = 32*MB, disk=32*MB)
 )
@@ -26,9 +28,13 @@ jobs = [
     Service(
         task = server,
         instances = 1,
+        contact= 'sre@toyserver.com',
         cluster = 'devcluster',
         environment = 'devel',
         role = 'www-data',
         name = 'toyserver'
+    ).bind(
+        repo = 'StephanErb/aurora-expedition',
+        checksum = 'a91c8f60f7dc405d70361e471c22f075a8f89661'
     )
 ]
