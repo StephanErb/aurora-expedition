@@ -97,7 +97,7 @@ We can view the job via the scheduler UI at http://aurora.local:8081/scheduler/w
            2016-04-17 15:36:21 RUNNING: None
 
 
-Our job has a single instance. We can send a HTTP request to this particular instances `0` using the built-in HTTP redirecting mechanism of Aurora:
+Our job has a single instance. We can send a HTTP request to this particular instance `0` using the built-in HTTP redirecting mechanism of Aurora (for production, we would use a proper load balancer instead):
 
     $ curl -L http://aurora.local:8081/mname/www-data/devel/toyserver/0
     <html><head><title></title></head>
@@ -117,6 +117,42 @@ Our job has a single instance. We can send a HTTP request to this particular ins
 
 
 
+## Aurora Job updates
+
+First of all, we want to add two additional instances to our job. We do this by telling Aurora to copy the configuration of instance `0`:
+
+    $ aurora job add devcluster/www-data/devel/toyserver/0 2
+    INFO] Adding 2 instances to devcluster/www-data/devel/toyserver using the task config of instance 0
+
+Once the additional instances are running, we prepare an update of our job by changing the job configuration `toyserver.aurora`:
+
+* change `instances = 1` to `intances = 3` in order to reflect our previous instance addition
+* change the checksum of the installed code to `checksum = 75060f6455e80e44abdf597a6349a56f7f4d34e4`
+
+We can now perform a rolling job update of all instances:
+
+    # inspect the changes between deployed and local configuration
+    aurora job diff devcluster/www-data/devel/toyserver toyserver.aurora
+
+    # start rolling job update
+    aurora update start devcluster/www-data/devel/toyserver toyserver.aurora
+
+The status of the update can be checked via the Aurora update UI, but also by checking the HTML output of the individual instances:
+
+* http://aurora.local:8081/mname/www-data/devel/toyserver/0
+* http://aurora.local:8081/mname/www-data/devel/toyserver/1
+* http://aurora.local:8081/mname/www-data/devel/toyserver/2
+
+May the unicorns be with you!
+
+
+## Mesos Inspection
+
+Aurora is a Mesos framework. We can therefore extract various metrics about our running task instances from Mesos:
+
+* Master state: `curl http://aurora.local:5050/master/state-summary | python -m json.tool` will return a summary of the entire Mesos cluster as seen by the master.
+* Task metrics: `curl http://aurora.local:5051/monitor/statistics | python -m json.tool` will return the CPU and memory usage for each task on this particular slave.
+* Failover Fun: `sudo stop mesos-slave` will disable the Mesos slave while all tasks continue to run. After a default timeout of 75 seconds, the Mesos master will consider all task instances to be `LOST` because it has lost connectivity with the slave. Aurora will try to reschedule them. Unfortunately, this won't work as we only have a single slave. Once we restart the slave using `sudo start mesos-slave`, the whole cluster state will reconcile.
 
 
 ## References
