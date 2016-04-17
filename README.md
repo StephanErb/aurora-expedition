@@ -39,14 +39,14 @@ We will have a short look at the simple Flask app that we want to use in the rem
 
     # install the example app
     virtualenv venv
-    . venv/bin/activate
+    source venv/bin/activate
     pip install -e .
 
     # start the Flask app using Gunicorn as an HTTP server
     gunicorn toyserver.main:app --bind :8000
 
 
-We can now check form outside of our Vagrant box that the server is running es expected:
+We can now check form outside of our Vagrant box that the server is running as expected:
 
     $ curl http://aurora.local:8000
     <html><head><title></title></head>
@@ -137,7 +137,7 @@ We can now perform a rolling job update of all instances:
     # start rolling job update
     aurora update start devcluster/www-data/devel/toyserver toyserver.aurora
 
-The status of the update can be checked via the Aurora update UI, but also by checking the HTML output of the individual instances:
+The status of the update can be checked via the Aurora update UI, or by looking at the HTML output of the individual instances:
 
 * http://aurora.local:8081/mname/www-data/devel/toyserver/0
 * http://aurora.local:8081/mname/www-data/devel/toyserver/1
