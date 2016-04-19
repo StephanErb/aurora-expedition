@@ -143,8 +143,9 @@ The status of the update can be checked via the Aurora update UI, or by looking 
 * http://aurora.local:8081/mname/www-data/devel/toyserver/1
 * http://aurora.local:8081/mname/www-data/devel/toyserver/2
 
-May the unicorns be with you!
+We could have added the instances automatically using `aurora update start` without the `aurora job add` before. However, watching a rolling update is more fun if we arleady have multiple running instances. In the real world, the `job add` command tends to be only used by autoscalers that don't have access to the job configuration.
 
+May the unicorns be with you!
 
 ## Mesos Inspection
 
