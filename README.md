@@ -19,8 +19,8 @@ We want to use the [official Aurora vagrant setup](https://github.com/apache/aur
 
 If this goes as planned, the following [components](https://github.com/apache/aurora/blob/rel/0.13.0/docs/getting-started/overview.md#components) should be reachable locally on `aurora.local` (`192.168.33.7`):
 
-* Aurora Scheduler: http://aurora.local:8081
-* Mesos Master: http://aurora.local:5050
+* Aurora Scheduler: http://192.168.33.7:8081
+* Mesos Master: http://192.168.33.7:5050
 
 If this does not work as expected, see the [Troubleshooting guide](https://github.com/apache/aurora/blob/rel/0.13.0/docs/getting-started/vagrant.md#troubleshooting).
 
@@ -48,7 +48,7 @@ We will have a short look at the simple Flask app that we want to use in the rem
 
 We can now check form outside of our Vagrant box that the server is running as expected:
 
-    $ curl http://aurora.local:8000
+    $ curl http://192.168.33.7:8000
     <html><head><title></title></head>
       <body>
         <pre>
@@ -82,7 +82,7 @@ For the deployment, we will use the Aurora configuration bundled in the toyserve
     aurora job create devcluster/www-data/devel/toyserver toyserver.aurora
 
 
-We can view the job via the scheduler UI at http://aurora.local:8081/scheduler/www-data/devel/toyserver or by using the commandline client:
+We can view the job via the scheduler UI at http://192.168.33.7:8081/scheduler/www-data/devel/toyserver or by using the commandline client:
 
     $ aurora job status devcluster/www-data/devel/toyserver
     Active tasks (1):
@@ -99,7 +99,7 @@ We can view the job via the scheduler UI at http://aurora.local:8081/scheduler/w
 
 Our job has a single instance. We can send a HTTP request to this particular instance `0` using the built-in HTTP redirecting mechanism of Aurora (for production, we would use a proper load balancer instead):
 
-    $ curl -L http://aurora.local:8081/mname/www-data/devel/toyserver/0
+    $ curl -L http://192.168.33.7:8081/mname/www-data/devel/toyserver/0
     <html><head><title></title></head>
       <body>
         <pre>
@@ -139,9 +139,9 @@ We can now perform a rolling job update of all instances:
 
 The status of the update can be checked via the Aurora update UI, or by looking at the HTML output of the individual instances:
 
-* http://aurora.local:8081/mname/www-data/devel/toyserver/0
-* http://aurora.local:8081/mname/www-data/devel/toyserver/1
-* http://aurora.local:8081/mname/www-data/devel/toyserver/2
+* http://192.168.33.7:8081/mname/www-data/devel/toyserver/0
+* http://192.168.33.7:8081/mname/www-data/devel/toyserver/1
+* http://192.168.33.7:8081/mname/www-data/devel/toyserver/2
 
 We could have added the instances automatically using `aurora update start` without the `aurora job add` before. However, watching a rolling update is more fun if we arleady have multiple running instances. In the real world, the `job add` command tends to be only used by autoscalers that don't have access to the job configuration.
 
@@ -151,8 +151,8 @@ May the unicorns be with you!
 
 Aurora is a Mesos framework. We can therefore extract various metrics about our running task instances from Mesos:
 
-* Master state: `curl http://aurora.local:5050/master/state-summary | python -m json.tool` will return a summary of the entire Mesos cluster as seen by the master.
-* Task metrics: `curl http://aurora.local:5051/monitor/statistics | python -m json.tool` will return the CPU and memory usage for each task on this particular slave.
+* Master state: `curl http://192.168.33.7:5050/master/state-summary | python -m json.tool` will return a summary of the entire Mesos cluster as seen by the master.
+* Task metrics: `curl http://192.168.33.7:5051/monitor/statistics | python -m json.tool` will return the CPU and memory usage for each task on this particular slave.
 * Failover Fun: `sudo stop mesos-slave` will disable the Mesos slave while all tasks continue to run. After a default timeout of 75 seconds, the Mesos master will consider all task instances to be `LOST` because it has lost connectivity with the slave. Aurora will try to reschedule them. Unfortunately, this won't work as we only have a single slave. Once we restart the slave using `sudo start mesos-slave`, the whole cluster state will reconcile.
 
 
